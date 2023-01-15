@@ -1,0 +1,17 @@
+# Nordpool electricity price templates
+template:
+    - sensor:
+        - name: "Max charging price (Wallbox)"
+          unique_id: wallbox_max_on_price
+          unit_of_measurement: "c/kWh"
+          state: "{{(state_attr('sensor.nordpool_kwh_fi_eur_3_10_024', 'today') | sort())[int(states('input_number.wallbox_hours'))-1] | float(0)}}"
+ 
+        - name: "Average charging price today (Wallbox)"
+          unit_of_measurement: "c/kWh"
+          state: "{{(state_attr('sensor.nordpool_kwh_fi_eur_3_10_024', 'today') | sort())[0:int(states('input_number.wallbox_hours'))] | average() | round(3)}}"
+          
+    - binary_sensor:
+        - name: "Triggered by price (Wallbox)"
+          unique_id: wallbox_trigger_price
+          state: "{{state_attr('sensor.nordpool_kwh_fi_eur_3_10_024', 'current_price') <= float(states('sensor.wallbox_max_on_price')) }}"
+    
