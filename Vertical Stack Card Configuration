@@ -1,0 +1,60 @@
+type: vertical-stack
+cards:
+  - type: entities
+    entities:
+      - entity: sensor.nordpool_kwh_fi_eur_3_10_024
+        name: Nordpool price now
+        secondary_info: none
+        icon: mdi:currency-eur
+      - entity: sensor.wallbox_max_on_price
+        icon: mdi:currency-eur
+      - entity: sensor.average_charging_price_today_wallbox
+        icon: mdi:currency-eur
+      - entity: binary_sensor.wallbox_trigger_price
+        secondary_info: last-changed
+        icon: mdi:ev-station
+      - entity: input_number.wallbox_hours
+        name: Charging hours today
+        secondary_info: last-changed
+        icon: mdi:hours-24
+      - entity: switch.wallbox_portal_pause_resume
+      - entity: switch.wallbox_portal_pause_resume_2
+    title: Wallbox Charging
+    show_header_toggle: true
+    state_color: true
+  - type: custom:config-template-card
+    entities:
+      - sensor.wallbox_max_on_price
+    variables:
+      - states['sensor.wallbox_max_on_price'].state
+    card:
+      type: custom:apexcharts-card
+      graph_span: 24h
+      header:
+        title: Triggered charging hours (c/kWh)
+        show: true
+      span:
+        start: day
+      now:
+        show: true
+        label: Now
+      yaxis:
+        - min: 0
+          decimals: 2
+      experimental:
+        color_threshold: true
+      series:
+        - entity: sensor.nordpool_kwh_fi_eur_3_10_024
+          type: column
+          color: grey
+          name: Electricity price
+          float_precision: 2
+          color_threshold:
+            - value: -10
+              color: green
+            - value: ${parseFloat(vars[0])}
+              color: grey
+          data_generator: |
+            return entity.attributes.raw_today.map((start, index) => {
+              return [new Date(start["start"]).getTime(), entity.attributes.raw_today[index]["value"]];
+            });
